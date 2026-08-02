@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dev Tools — E2E Test UI</title>
+  <link rel="stylesheet" href="/ui/test.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="logo">Instamart Dev</div>
+    <a href="/">← Back to Demo</a>
+  </header>
+  <main class="layout">
+    <section class="panel controls">
+      <label>User ID <input type="text" id="user-id" value="user_001" /></label>
+      <button id="refresh-btn">Reload</button>
+    </section>
+    <section id="output" class="panel"><pre id="result">Loading...</pre></section>
+    <section class="panel">
+      <button id="dashboard-btn">Load Dashboard</button>
+      <button id="monitor-btn">Load Monitoring</button>
+      <pre id="extra" class="code"></pre>
+    </section>
+  </main>
+  <script src="/ui/test.js"></script>
+</body>
+</html>
