@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 .env
 data/models/
+.streamlit/secrets.toml
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
