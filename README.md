@@ -1,6 +1,6 @@
-# Smart Discovery Assistant
+# instamart-newCategory_pilot
 
-AI-powered **Cross Category Discovery** for Swiggy Instamart — increases cross-category penetration by recommending one highly relevant new category per session.
+Pilot project to drive orders from a **new category** — AI-powered **Cross Category Discovery** for Swiggy Instamart (BasketPilot demo).
 
 ## Quick Start
 
@@ -21,7 +21,7 @@ copy .env.example .env
 python run.py
 ```
 
-Open **http://localhost:8000** for the recommendation card UI.  
+Open **http://localhost:8000** for the BasketPilot demo UI.  
 API docs: **http://localhost:8000/docs**
 
 ## Survey PDF Setup
@@ -53,7 +53,7 @@ If `USE_LLM=false` or no key is set, rule-based templates are used automatically
 | **Phase 1** | Weeks 1–2 | Purchase history analyzer, recommendation engine, ML trainer |
 | **Phase 2** | Weeks 3–4 | FastAPI, recommendation cards, explainability, frontend |
 | **Phase 3** | Weeks 5–6 | A/B testing, analytics dashboard, feedback loop |
-| **Phase 4** | Ongoing | K8s deployment, KPI monitoring, continuous learning |
+| **Phase 4** | Ongoing | Streamlit deployment, KPI monitoring, continuous learning |
 
 See [docs/architecture.md](docs/architecture.md) for the full system diagram.
 
