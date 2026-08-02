@@ -501,14 +501,15 @@ html.embed-mode .phone-frame {
 }
 
 .checkout-bar {
-  position: relative;
   flex-shrink: 0;
   background: white;
-  border-top: 1px solid #e2e8f0;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   z-index: 50;
-  padding: 8px 14px;
-  margin: 8px -14px -10px;
+  padding: 10px 14px;
+  margin: 10px 0 0;
+  width: 100%;
 }
 
 .checkout-bar-inner {
@@ -889,15 +890,21 @@ html.embed-mode .screen {
 #screen-home.active {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  justify-content: flex-start;
+  min-height: 0;
+  flex: 1;
 }
 
 #screen-home .web-page {
-  flex: 1;
+  flex: 0 0 auto;
+  height: auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   gap: 8px;
+  overflow: visible;
 }
 
 #screen-home .home-grid {
@@ -905,7 +912,7 @@ html.embed-mode .screen {
 }
 
 #screen-home .checkout-bar {
-  margin-top: auto;
+  margin-top: 8px;
   flex-shrink: 0;
 }
 
