@@ -29,6 +29,7 @@ const REORDER_DEFAULTS = [
 ];
 
 const AI_CART_ID = "ai-discovery-pick";
+const NEW_CATEGORY_BONUS = 25;
 
 let recommendation = null;
 let cartItems = [];
@@ -58,7 +59,7 @@ function getCartSubtotal() {
 }
 
 function getNewCategoryBonus() {
-  return cartItems.some((item) => item.isNew) ? 25 : 0;
+  return cartItems.some((item) => item.isNew) ? NEW_CATEGORY_BONUS : 0;
 }
 
 function getAiCartItem() {
@@ -185,6 +186,7 @@ function renderHome() {
 
   renderQuickPicks();
   updateAiButtons(aiN > 0);
+  updateHomeAiBonusState();
   updateCheckoutBar();
 }
 
@@ -369,6 +371,50 @@ function renderHomeAiCard(rec) {
   } else {
     priceEl.textContent = "";
     priceEl.classList.add("hidden");
+  }
+
+  renderHomeAiBonus(rec);
+}
+
+function renderHomeAiBonus(rec) {
+  const banner = $("home-ai-bonus");
+  const sub = $("home-bonus-sub");
+  if (!banner || !sub) return;
+
+  const coinsReward = (rec.rewards || []).find(
+    (r) => r.type === "coins" || /bonus|coins/i.test(r.label || "")
+  );
+  let detail = `Add this pick — save ₹${NEW_CATEGORY_BONUS} at checkout`;
+  if (coinsReward?.value) {
+    detail += ` + earn ${coinsReward.value}`;
+  }
+  sub.textContent = detail;
+  sub.dataset.default = detail;
+  updateHomeAiBonusState();
+}
+
+function updateHomeAiBonusState() {
+  const banner = $("home-ai-bonus");
+  const title = $("home-bonus-title");
+  const value = $("home-bonus-value");
+  const sub = $("home-bonus-sub");
+  if (!banner) return;
+
+  const applied = !!getAiCartItem();
+  banner.classList.toggle("applied", applied);
+
+  if (title) {
+    title.textContent = applied
+      ? "New category bonus applied"
+      : "New category bonus";
+  }
+  if (value) {
+    value.textContent = applied ? `-₹${NEW_CATEGORY_BONUS}` : `₹${NEW_CATEGORY_BONUS} off`;
+  }
+  if (sub) {
+    sub.textContent = applied
+      ? `You're saving ₹${NEW_CATEGORY_BONUS} on this order — great pick!`
+      : sub.dataset.default || `Add this pick — save ₹${NEW_CATEGORY_BONUS} at checkout`;
   }
 }
 
