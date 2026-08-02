@@ -307,6 +307,7 @@ async function loadSmartDiscovery() {
   loaders.forEach((id) => $(id)?.classList.remove("hidden"));
   $("discovery-card")?.classList.add("hidden");
   $("home-ai-card")?.classList.add("hidden");
+  $("home-ai-actions")?.classList.add("hidden");
   $("card-error")?.classList.add("hidden");
   $("home-ai-error")?.classList.add("hidden");
 
@@ -335,6 +336,7 @@ async function loadSmartDiscovery() {
     $("demo-meta").textContent = `${data.latency_ms || 0}ms · Pilot AI`;
     $("discovery-card")?.classList.remove("hidden");
     $("home-ai-card")?.classList.remove("hidden");
+    $("home-ai-actions")?.classList.remove("hidden");
     renderHome();
   } catch {
     loaders.forEach((id) => $(id)?.classList.add("hidden"));
@@ -508,25 +510,37 @@ function handleAddProduct(id) {
   }
 }
 
-async function addAiToCart() {
-  if (!recommendation) return;
+function getAiProductFromRec() {
+  if (!recommendation) return null;
+  const p = recommendation.products?.[0];
+  const price = p?.price_inr ?? p?.price ?? 0;
+  return {
+    id: AI_CART_ID,
+    name: p?.name || recommendation.headline || "AI Discovery Pick",
+    price: Number(price) || 0,
+    category: recommendation.category || "Discovery",
+    emoji: "✨",
+  };
+}
 
-  const product = recommendation.products?.[0];
-  if (product) {
-    addCartItem(
-      {
-        id: AI_CART_ID,
-        name: product.name,
-        price: product.price_inr,
-        category: recommendation.category,
-        emoji: "✨",
-      },
-      { isNew: true, quantity: 1 }
-    );
+async function addAiToCart() {
+  if (!recommendation) {
+    showToast("Recommendation still loading…", "");
+    return;
   }
 
+  const product = getAiProductFromRec();
+  if (!product) return;
+
+  addCartItem(product, { isNew: true, quantity: 1 });
+
+  if (!aiAddedOnce) {
+    insights.categories += 1;
+    insights.coins += 50;
+  }
   aiAddedOnce = true;
   updateAiButtons(true);
+  updateCheckoutBar();
   showToast("✨ AI pick added — ready for checkout!", "success");
   await submitFeedback(5, true, false);
 }
@@ -662,9 +676,13 @@ document.querySelectorAll("[data-go]").forEach((el) => {
   el.addEventListener("click", () => goToScreen(el.dataset.go));
 });
 
-$("btn-add-cart").addEventListener("click", addAiToCart);
-$("btn-add-ai-home").addEventListener("click", addAiToCart);
-$("btn-cart-add-ai").addEventListener("click", addAiToCart);
+$("btn-add-cart")?.addEventListener("click", addAiToCart);
+$("btn-add-ai-home")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  addAiToCart();
+});
+$("btn-cart-add-ai")?.addEventListener("click", addAiToCart);
 $("btn-checkout").addEventListener("click", initiateCheckout);
 $("btn-home-checkout").addEventListener("click", goToCheckoutScreen);
 $("btn-reorder-all").addEventListener("click", reorderAll);

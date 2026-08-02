@@ -964,25 +964,6 @@ html.embed-mode .screen {
   margin-bottom: 6px;
 }
 
-.home-ai-headline {
-  font-size: 0.88rem;
-  font-weight: 800;
-  color: var(--dark);
-  line-height: 1.3;
-  margin-bottom: 6px;
-}
-
-.home-ai-reason {
-  font-size: 0.7rem;
-  color: var(--dark);
-  line-height: 1.35;
-  background: rgba(255, 255, 255, 0.7);
-  border-left: 3px solid var(--purple);
-  padding: 6px 8px;
-  border-radius: 0 8px 8px 0;
-  margin-bottom: 6px;
-}
-
 .home-ai-product {
   display: flex;
   align-items: center;
@@ -1009,18 +990,62 @@ html.embed-mode .screen {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-top: auto;
   flex-shrink: 0;
 }
 
 .btn-add-hero {
   padding: 10px;
   font-size: 0.82rem;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .panel-ai {
   border: 2px solid #c4b5fd;
   box-shadow: 0 4px 16px rgba(124, 58, 237, 0.1);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.panel-ai #home-ai-card {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel-ai .home-ai-actions {
+  flex-shrink: 0;
+  z-index: 2;
+  position: relative;
+  padding-top: 4px;
+}
+
+.home-ai-headline {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--dark);
+  line-height: 1.3;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.home-ai-reason {
+  font-size: 0.7rem;
+  color: var(--dark);
+  line-height: 1.35;
+  background: rgba(255, 255, 255, 0.7);
+  border-left: 3px solid var(--purple);
+  padding: 6px 8px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .btn-ghost {
