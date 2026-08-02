@@ -72,14 +72,17 @@ Open http://localhost:8501.
 
 ### How it works
 
-`streamlit_app.py` loads the FastAPI app **in-process** via Starlette `TestClient`. Recommendation, feedback, and health checks run inside the Streamlit Python process — **no browser call to `127.0.0.1:8000`**.
+`streamlit_app.py` embeds the **same web UI** as `python run.py` (`index.html`, `app.js`, `styles.css`) via `st.components.v1.html`, with:
 
-This avoids the **connection failure** that occurs when embedding an iframe pointed at localhost on Streamlit Cloud (the user's browser cannot reach the server's localhost).
+- **Bottom tab bar**, compact usual-picks frame, search, checkout flow (identical to the FastAPI demo)
+- Recommendation data **preloaded in-process** via Starlette `TestClient` → injected as `window.__INITIAL_CARDS__`
+- **No browser call to `127.0.0.1:8000`** (avoids Streamlit Cloud connection failures)
 
 | Layer | Implementation |
 |-------|----------------|
-| UI | Native Streamlit pages mirroring Home / Discover / Checkout / Insights |
-| API | In-process `TestClient` → `src/app/main.py` |
+| UI | Full BasketPilot frontend inlined in Streamlit component iframe |
+| API | TestClient loads cards at startup; cart/search/checkout run client-side in JS |
+| Feedback API | Skipped in Streamlit embed mode (demo UX unchanged) |
 | Secrets | `.streamlit/secrets.toml` locally · Streamlit Cloud dashboard in production |
 
 ### Streamlit config

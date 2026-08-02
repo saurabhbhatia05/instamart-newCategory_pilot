@@ -311,12 +311,15 @@ async function loadSmartDiscovery() {
   $("home-ai-error")?.classList.add("hidden");
 
   try {
-    const res = await fetch("/api/v1/phase2/cards", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: DEMO_USER }),
-    });
-    const data = await res.json();
+    let data = window.__INITIAL_CARDS__ || null;
+    if (!data) {
+      const res = await fetch("/api/v1/phase2/cards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: DEMO_USER }),
+      });
+      data = await res.json();
+    }
 
     loaders.forEach((id) => $(id)?.classList.add("hidden"));
 
@@ -329,7 +332,7 @@ async function loadSmartDiscovery() {
     recommendation = data.recommendation;
     renderDiscoveryCard(recommendation);
     renderHomeAiCard(recommendation);
-    $("demo-meta").textContent = `${data.latency_ms}ms · Pilot AI`;
+    $("demo-meta").textContent = `${data.latency_ms || 0}ms · Pilot AI`;
     $("discovery-card")?.classList.remove("hidden");
     $("home-ai-card")?.classList.remove("hidden");
     renderHome();
@@ -337,7 +340,7 @@ async function loadSmartDiscovery() {
     loaders.forEach((id) => $(id)?.classList.add("hidden"));
     $("card-error")?.classList.remove("hidden");
     $("home-ai-error")?.classList.remove("hidden");
-    $("demo-meta").textContent = "Backend offline";
+    $("demo-meta").textContent = window.__STREAMLIT_MODE__ ? "Streamlit embed" : "Backend offline";
   }
 }
 
@@ -530,6 +533,7 @@ async function addAiToCart() {
 
 async function submitFeedback(rating, addedToCart, purchased) {
   if (!recommendation) return;
+  if (window.__STREAMLIT_MODE__) return;
   try {
     await fetch("/api/v1/phase3/feedback", {
       method: "POST",
