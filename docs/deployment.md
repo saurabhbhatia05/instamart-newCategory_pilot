@@ -4,10 +4,23 @@ This guide covers how to run and deploy the **Smart Discovery Assistant** (Baske
 
 | Mode | Command | URL | Best for |
 |------|---------|-----|----------|
-| **Full Web UI** | `python run.py` | http://localhost:8000 | Local demo, full UX (search, qty controls, bottom nav) |
-| **Streamlit** | `streamlit run streamlit_app.py` | http://localhost:8501 | Assignment deployment, Streamlit Cloud |
+| **Full Web App** (recommended) | `python run.py` or Render Docker | http://localhost:8000 | **Best UI** — full viewport, live API, no iframe gaps |
+| **Streamlit** | `streamlit run streamlit_app.py` | http://localhost:8501 | Assignment / Streamlit Cloud requirement |
 
 See [architecture.md §16](architecture.md#16-deployment-architecture) for system topology and design rationale.
+
+---
+
+## Which platform should I use?
+
+| Platform | Good for BasketPilot? | Why |
+|----------|----------------------|-----|
+| **Render / Railway / Fly.io** (`python run.py` or `Dockerfile`) | **Yes — recommended** | Runs FastAPI + ML engine + full web UI on one URL. No iframe, fills the screen. |
+| **Streamlit Cloud** | Yes (if assignment requires Streamlit) | Embeds the same UI in an iframe. Works, but adds padding/gaps vs native deploy. |
+| **Vercel alone** | **No (not enough)** | Vercel hosts static sites/serverless JS. This app needs **Python + scikit-learn + FastAPI** for recommendations. |
+| **Vercel + separate API** | Possible but complex | Static frontend on Vercel + API on Render. Two deploys, CORS config, more setup. |
+
+**Recommendation:** Use **Render** (see `render.yaml`) for the polished app experience. Keep **Streamlit Cloud** only if your assignment explicitly requires Streamlit.
 
 ---
 
@@ -51,7 +64,7 @@ python run.py
 
 ### UI features (web frontend)
 
-- **Bottom tab bar:** Home · Discover · Checkout · Insights (single row, fixed at bottom)
+- **Left sidebar nav** (Home · Discover · Checkout · Insights)
 - **Compact usual picks:** scrollable framed grid on Home
 - **AI Discovery Pick:** hero card with one-click add
 - **Search:** tap results to add directly to cart
@@ -163,4 +176,13 @@ pytest tests/ -q
 
 ---
 
-*Last updated: August 2026 — aligns with BasketPilot web UI (bottom nav, compact picks) and Streamlit Cloud in-process deployment.*
+## 8. Deploy full app on Render (recommended UI)
+
+1. Push this repo to GitHub
+2. Go to [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint**
+3. Connect the repo — Render reads `render.yaml` and builds from `Dockerfile`
+4. Open the URL Render gives you (e.g. `https://basketpilot.onrender.com`)
+
+This serves the **native web app** at `/` with live API — no Streamlit iframe gaps.
+
+---

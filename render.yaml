@@ -1,0 +1,14 @@
+# Render.com — deploy full BasketPilot web app (recommended for best UI)
+# Connect repo at https://dashboard.render.com → New → Blueprint
+
+services:
+  - type: web
+    name: basketpilot
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: USE_LLM
+        value: "false"

@@ -71,7 +71,7 @@ def build_embed_html(cards_json: str, asset_version: str) -> str:
     body = body.replace('<link rel="stylesheet" href="/ui/styles.css" />', "")
 
     bootstrap = f"""
-document.documentElement.classList.add("embed-mode");
+document.documentElement.classList.add("embed-mode", "app-mode");
 window.__STREAMLIT_MODE__ = true;
 window.__INITIAL_CARDS__ = {cards_json};
 """
@@ -103,22 +103,36 @@ def main() -> None:
     st.markdown(
         """
         <style>
-          header[data-testid="stHeader"] { display: none; }
-          #MainMenu { visibility: hidden; }
-          footer { visibility: hidden; }
-          .stApp { background: #f8fafc; }
-          .block-container {
+          header[data-testid="stHeader"] { display: none !important; }
+          #MainMenu, footer, .stDeployButton { visibility: hidden !important; }
+          .stApp {
+            background: #f8fafc !important;
+            overflow: hidden !important;
+          }
+          [data-testid="stAppViewContainer"] {
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          [data-testid="stAppViewContainer"] > .main {
+            padding: 0 !important;
+          }
+          [data-testid="stAppViewContainer"] .block-container {
             padding: 0 !important;
             max-width: 100% !important;
             margin: 0 !important;
           }
-          iframe[title="BasketPilot"] {
+          [data-testid="stVerticalBlock"] { gap: 0 !important; }
+          [data-testid="stHtml"] {
+            height: 100dvh !important;
+            min-height: 100dvh !important;
+          }
+          [data-testid="stHtml"] iframe {
             width: 100vw !important;
             max-width: 100% !important;
+            height: 100dvh !important;
+            min-height: 100dvh !important;
             border: 0 !important;
             display: block !important;
-            min-height: 100vh;
-            min-height: 100dvh;
           }
         </style>
         """,
@@ -140,7 +154,8 @@ def main() -> None:
     cards_json = json.dumps(initial_cards)
     embed_html = build_embed_html(cards_json, _asset_version())
 
-    components.html(embed_html, height=900, scrolling=False)
+    # Height must match viewport — CSS above stretches iframe to 100dvh
+    components.html(embed_html, height=720, scrolling=False)
 
 
 if __name__ == "__main__":

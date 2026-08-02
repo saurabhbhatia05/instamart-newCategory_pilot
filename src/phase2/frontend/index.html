@@ -10,12 +10,15 @@
       if (params.get("embed") === "1" || window.self !== window.top) {
         document.documentElement.classList.add("embed-mode");
       }
+      if (window.matchMedia("(min-width: 768px)").matches) {
+        document.documentElement.classList.add("app-mode");
+      }
     })();
   </script>
   <link rel="stylesheet" href="/ui/styles.css" />
 </head>
 <body>
-  <div class="web-app" id="phone-frame">
+  <div class="web-app app-shell" id="phone-frame">
     <!-- Top web header -->
     <header class="web-header">
       <div class="web-header-top">
@@ -51,9 +54,6 @@
 
     <div class="web-shell">
       <nav class="side-nav" aria-label="Main navigation">
-        <div class="side-nav-brand">
-          <span class="side-nav-label">Menu</span>
-        </div>
         <button type="button" class="nav-item active" data-screen="home"><span>🏠</span>Home</button>
         <button type="button" class="nav-item" data-screen="discover"><span>✨</span>Discover</button>
         <button type="button" class="nav-item" data-screen="cart"><span>🛒</span>Checkout<span class="cart-badge hidden" id="cart-count">0</span></button>
