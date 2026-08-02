@@ -21,8 +21,21 @@ copy .env.example .env
 python run.py
 ```
 
-Open **http://localhost:8000** for the BasketPilot demo UI.  
+Open **http://localhost:8000** for the full BasketPilot web UI (bottom nav, search, checkout).  
 API docs: **http://localhost:8000/docs**
+
+## Streamlit Deployment
+
+For **Streamlit Community Cloud** (assignment hosting):
+
+```bash
+streamlit run streamlit_app.py
+# → http://localhost:8501
+```
+
+The Streamlit app runs the recommendation engine **in-process** (no separate API server required on Cloud).
+
+See **[docs/deployment.md](docs/deployment.md)** for Cloud setup, secrets, and troubleshooting (including connection failures).
 
 ## Survey PDF Setup
 
@@ -55,7 +68,7 @@ If `USE_LLM=false` or no key is set, rule-based templates are used automatically
 | **Phase 3** | Weeks 5–6 | A/B testing, analytics dashboard, feedback loop |
 | **Phase 4** | Ongoing | Streamlit deployment, KPI monitoring, continuous learning |
 
-See [docs/architecture.md](docs/architecture.md) for the full system diagram.
+See [docs/architecture.md](docs/architecture.md) for the full system diagram and [docs/deployment.md](docs/deployment.md) for deployment steps.
 
 ## API Endpoints
 
@@ -87,6 +100,7 @@ curl -X POST http://localhost:8000/api/v1/recommendations \
 ├── config/settings.py          # Env-based configuration
 ├── data/sample/                # Sample purchase history
 ├── docs/architecture.md        # Phase architecture
+├── docs/deployment.md          # Local + Streamlit Cloud deployment guide
 ├── src/
 │   ├── app/                    # FastAPI bootstrap
 │   ├── phase1/                 # Recommendation engine

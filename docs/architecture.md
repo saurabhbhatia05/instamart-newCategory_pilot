@@ -6,7 +6,7 @@
 | **Version** | 1.0 |
 | **Source PRD** | `problemStatement.md` |
 | **Product** | Smart Discovery Assistant (AI Shopping Companion) |
-| **Status** | MVP — Phase 1–4 implemented; deployed on **Streamlit** |
+| **Status** | MVP — Phase 1–4 implemented; **Streamlit Cloud** + full **Web UI** via FastAPI |
 
 ---
 
@@ -336,7 +336,8 @@ Assignment: deterministic hash of `user_id` → bucket. Tracks impressions, CTR,
 
 | Component | Path | Responsibility |
 |-----------|------|----------------|
-| Streamlit App | `streamlit_app.py` | **Primary deployment** — BasketPilot UI, API client, session state |
+| Streamlit App | `streamlit_app.py` | **Cloud deployment** — in-process TestClient, 4-tab Streamlit UI |
+| Web Frontend | `src/phase2/frontend/` | **Full demo UI** — bottom nav, search, checkout (served by `run.py`) |
 | Streamlit Config | `.streamlit/config.toml` | Theme, layout, cloud deployment settings |
 | Production Service | `src/phase4/service.py` | Deployment, monitoring, learning orchestration |
 | Phase 4 API Router | `src/phase4/api/router.py` | K8s manifests, alerts, retrain triggers |
@@ -609,18 +610,26 @@ flowchart TB
 
 ## 16. Deployment Architecture
 
-The **Smart Discovery Assistant** is deployed as a **Streamlit application**. Streamlit hosts the user-facing BasketPilot demo and orchestrates calls to the FastAPI backend that runs the recommendation engine, explainability layer, and feedback APIs.
+BasketPilot supports **two deployment surfaces**:
+
+1. **Full Web UI** — FastAPI serves `src/phase2/frontend/` at `python run.py` → `:8000` (local / hosted API).
+2. **Streamlit** — `streamlit run streamlit_app.py` → `:8501` for assignment hosting on **Streamlit Community Cloud**.
+
+Both surfaces call the same Phase 1–4 engine. Streamlit uses an **in-process TestClient** so Cloud deploys do not depend on browser → `localhost` API calls (which cause connection failures).
+
+**Operational guide:** [docs/deployment.md](deployment.md)
 
 ### 16.1 Deployment Overview
 
 | Aspect | Choice | Rationale |
 |--------|--------|-----------|
-| **Primary platform** | Streamlit | Fast MVP delivery, built-in hosting (Streamlit Community Cloud), ideal for assignment demo and stakeholder review |
-| **Backend** | FastAPI + Uvicorn | Keeps ML/recommendation logic decoupled from UI; same REST API usable by Instamart mobile/web later |
-| **UI** | BasketPilot demo (`src/phase2/frontend/`) embedded or mirrored in Streamlit pages | Preserves colorful multi-screen prototype while meeting Streamlit deployment requirement |
-| **Secrets** | `.env` locally · Streamlit Secrets in cloud | `GROK_API_KEY`, `SURVEY_PDF_PATH`, `API_BASE_URL` |
+| **Assignment / Cloud platform** | Streamlit Community Cloud | One-click GitHub deploy, secrets management, no separate API host for MVP |
+| **Backend** | FastAPI + Uvicorn (`run.py`) | REST API for full web UI and future Instamart integration |
+| **Full demo UI** | `src/phase2/frontend/` | Bottom tab bar (Home · Discover · Checkout · Insights), compact usual-picks frame, search, checkout flow |
+| **Streamlit UI** | `streamlit_app.py` | Native pages mirroring the four tabs; TestClient calls FastAPI in-process |
+| **Secrets** | `.env` locally · Streamlit Secrets in cloud | `GROK_API_KEY`, `SURVEY_PDF_PATH`, `USE_LLM` |
 
-### 16.2 Streamlit Deployment Topology
+### 16.2 Deployment Topology
 
 ```mermaid
 flowchart TB
@@ -628,17 +637,22 @@ flowchart TB
         B[Browser]
     end
 
-    subgraph StreamlitDeploy["Streamlit Deployment"]
-        SC[Streamlit Community Cloud<br/>or local `streamlit run`]
-        APP[streamlit_app.py]
-        UI[BasketPilot UI<br/>pages / embedded frontend]
+    subgraph WebUI["Full Web UI — python run.py"]
+        UV[Uvicorn :8000]
+        FE[index.html · app.js · styles.css]
     end
 
-    subgraph Backend["FastAPI Backend"]
-        API[Uvicorn :8000]
+    subgraph StreamlitDeploy["Streamlit — streamlit run"]
+        SC[Streamlit Cloud / :8501]
+        STAPP[streamlit_app.py]
+        TC[TestClient in-process]
+    end
+
+    subgraph Engine["Shared FastAPI App"]
+        APP[src/app/main.py]
         P1[Phase 1 Engine]
         P2[Phase 2 Cards]
-        P3[Phase 3 Analytics]
+        P3[Phase 3 Feedback]
     end
 
     subgraph External
@@ -646,44 +660,61 @@ flowchart TB
         PDF[Survey PDF]
     end
 
-    B --> SC
-    SC --> APP --> UI
-    APP -->|httpx REST| API
-    API --> P1 --> P2 --> P3
+    B -->|localhost:8000| UV
+    UV --> FE
+    UV --> APP
+    B -->|Cloud URL| SC
+    SC --> STAPP --> TC --> APP
+    APP --> P1 --> P2 --> P3
     P2 --> GROK
     P1 --> PDF
 ```
 
-**Request flow:**
+**Web UI request flow (`run.py`):**
 
-1. User opens the Streamlit app URL (local `http://localhost:8501` or Streamlit Cloud).
-2. `streamlit_app.py` loads BasketPilot screens (Discover, Cart, Insights).
-3. On session start, Streamlit calls `POST /api/v1/phase2/cards` (or `/api/v1/recommendations`) on the FastAPI backend.
-4. User actions (Add to cart, star rating) call `POST /api/v1/feedback` via the backend.
-5. Optional Grok explainability uses `GROK_API_KEY` from environment/secrets.
+1. User opens http://localhost:8000.
+2. Static frontend loads; `app.js` calls `/api/v1/phase2/cards`, `/api/v1/phase3/feedback`, etc. on the same origin.
+3. Bottom navigation switches Home / Discover / Checkout / Insights without full page reload.
+
+**Streamlit request flow (`streamlit_app.py`):**
+
+1. User opens Streamlit URL (local `:8501` or Community Cloud).
+2. `get_api_client()` caches a Starlette `TestClient` around `src.app.main:app`.
+3. Page actions call `POST /api/v1/phase2/cards` and `POST /api/v1/phase3/feedback` in-process — no HTTP to localhost from the browser.
 
 ### 16.3 Local Development
 
-Run **two processes** — backend first, then Streamlit:
+**Option A — Full Web UI (recommended for UX demo):**
 
 ```bash
-# Terminal 1 — FastAPI backend
 python run.py
-# → http://localhost:8000  (health: GET /health)
+# → http://localhost:8000
+```
 
-# Terminal 2 — Streamlit frontend
+**Option B — Streamlit (matches Cloud deploy):**
+
+```bash
 streamlit run streamlit_app.py
 # → http://localhost:8501
 ```
 
+**Option C — Both** (independent; Streamlit does not require `run.py` running):
+
+```bash
+# Terminal 1
+python run.py
+
+# Terminal 2
+streamlit run streamlit_app.py
+```
+
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `API_BASE_URL` | `http://localhost:8000` | FastAPI base URL used by Streamlit |
 | `GROK_API_KEY` | — | Optional LLM explainability |
-| `SURVEY_PDF_PATH` | `data/survey/...` | Survey PDF for category priors |
+| `SURVEY_PDF_PATH` | `data/survey/responses.pdf` | Survey PDF for category priors |
 | `USE_LLM` | `false` | Enable/disable Grok calls |
 
-Add `streamlit>=1.32.0` to `requirements.txt` for deployment.
+`streamlit>=1.32.0` is included in `requirements.txt`.
 
 ### 16.4 Streamlit Community Cloud Deployment
 
@@ -692,37 +723,38 @@ Add `streamlit>=1.32.0` to `requirements.txt` for deployment.
 | 1 | Push repository to GitHub |
 | 2 | Connect repo at [share.streamlit.io](https://share.streamlit.io) |
 | 3 | Set **Main file path** to `streamlit_app.py` |
-| 4 | Add secrets in Streamlit Cloud dashboard (`.streamlit/secrets.toml` format): `GROK_API_KEY`, `API_BASE_URL` |
-| 5 | Deploy — Streamlit serves the UI; ensure FastAPI backend is reachable (same container, sidecar, or hosted API URL) |
+| 4 | Add secrets (see `.streamlit/secrets.toml.example`): `GROK_API_KEY`, `SURVEY_PDF_PATH`, `USE_LLM` |
+| 5 | Deploy — engine runs in-process; **no `API_BASE_URL` or separate FastAPI host required** for MVP |
 
-**Single-container option (demo):** A `Dockerfile.streamlit` or extended `Dockerfile` can start Uvicorn in the background and Streamlit in the foreground so one deployable unit serves both layers.
+**Do not** embed `http://127.0.0.1:8000` in an iframe on Streamlit Cloud — the user's browser cannot reach the server localhost (connection failure).
 
-**Split deployment (recommended for production demo):**
+**Optional split deployment** (full web UI on public host):
 
 | Service | Host | Port |
 |---------|------|------|
-| FastAPI | Render / Railway / Fly.io / EC2 | 8000 |
+| FastAPI + Web UI | Render / Railway / Fly.io / EC2 | 8000 |
 | Streamlit | Streamlit Community Cloud | 8501 |
 
-Set `API_BASE_URL` in Streamlit secrets to the public FastAPI URL.
-
-### 16.5 Streamlit App Structure
+### 16.5 App Structure
 
 ```
-streamlit_app.py              # Entry point — pages, session state, API client
+streamlit_app.py                    # Streamlit entry — TestClient, session state, 4 tabs
 .streamlit/
-├── config.toml               # Theme (BasketPilot colors), layout wide
-└── secrets.toml              # Local secrets (gitignored); mirror in Cloud
+├── config.toml                     # Theme, layout, server settings
+└── secrets.toml.example            # Template for Cloud / local secrets
+src/phase2/frontend/
+├── index.html                      # Web shell — bottom nav, compact picks frame
+├── app.js                          # Cart, search, API fetch, screen routing
+└── styles.css                      # Web layout + embed mode
+run.py                              # Uvicorn entry — full web UI at :8000
 ```
 
-Planned pages map to the BasketPilot demo:
-
-| Streamlit page | Demo screen | Backend endpoints |
-|----------------|-------------|-------------------|
-| Home | Home + recommendation card | `POST /api/v1/phase2/cards` |
-| Discover | Category exploration | `POST /api/v1/phase1/analyze` |
-| Cart | One-click add + checkout | `POST /api/v1/feedback` |
-| Insights | KPIs + experiment stats | `GET /api/v1/analytics/kpis` |
+| Surface | Tab / screen | Backend endpoints |
+|---------|--------------|-------------------|
+| Home | Usual picks frame + AI hero | `POST /api/v1/phase2/cards` |
+| Discover | Full recommendation card | `POST /api/v1/phase2/cards` |
+| Checkout | Cart + place order | `POST /api/v1/phase3/feedback` |
+| Insights | Pilot KPIs | Session state + analytics APIs |
 
 ### 16.6 Alternative Production Topology (Kubernetes)
 
@@ -896,7 +928,7 @@ SwiggyInstamart_Cross_Category_Discovery/
 | User flow | §10 |
 | Success metrics | §14 |
 | Production implementation roadmap | §11, §16 |
-| Streamlit deployment | §16.2–§16.5 |
+| Streamlit deployment | §16, [deployment.md](deployment.md) |
 
 ---
 

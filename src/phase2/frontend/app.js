@@ -208,11 +208,11 @@ function renderQuickPicks() {
       const inCart = findCartItem(p.id);
       const qty = inCart?.quantity || 0;
       return `
-    <button type="button" class="mini-pick${qty ? " in-cart" : ""}" data-add-id="${p.id}">
-      <span class="mini-emoji">${p.emoji}</span>
-      <span class="mini-name">${p.name}</span>
-      <span class="mini-price">₹${p.price}</span>
-      <span class="mini-add">${qty ? qty : "+"}</span>
+    <button type="button" class="pick-card web-pick-card${qty ? " in-cart" : ""}" data-add-id="${p.id}">
+      <span class="pick-emoji">${p.emoji}</span>
+      <span class="pick-name">${p.name}</span>
+      <span class="pick-price">₹${p.price}</span>
+      <span class="pick-add">${qty ? "In cart · " + qty : "+ Add"}</span>
     </button>`;
     })
     .join("");
@@ -285,7 +285,7 @@ function goToScreen(name) {
   if (nav) nav.classList.add("active");
 
   $("delivery-pill").textContent =
-    name === "home" ? "⚡ 8 min · Home" : `⚡ 8 min · ${name.charAt(0).toUpperCase() + name.slice(1)}`;
+    name === "home" ? "⚡ 8 min delivery" : `⚡ 8 min · ${name.charAt(0).toUpperCase() + name.slice(1)}`;
 
   closeSearch();
 

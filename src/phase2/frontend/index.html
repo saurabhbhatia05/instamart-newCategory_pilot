@@ -2,227 +2,248 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>BasketPilot — Smart Discovery Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>BasketPilot — Smart Discovery</title>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get("embed") === "1" || window.self !== window.top) {
+        document.documentElement.classList.add("embed-mode");
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="/ui/styles.css" />
 </head>
 <body>
-  <div class="phone-frame" id="phone-frame">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="header-gradient"></div>
-      <div class="header-content">
+  <div class="web-app" id="phone-frame">
+    <!-- Top web header -->
+    <header class="web-header">
+      <div class="web-header-top">
         <div class="brand">
           <span class="pilot-badge">PILOT</span>
           <span class="brand-name">BasketPilot</span>
+          <span class="brand-tagline">Smart Discovery</span>
         </div>
-        <div class="delivery-pill" id="delivery-pill">⚡ 8 min · Home</div>
+
+        <div class="header-actions">
+          <span class="delivery-pill" id="delivery-pill">⚡ 8 min delivery</span>
+          <button type="button" class="header-cart-btn hidden" id="home-cart-chip" data-go="cart">
+            🛒 <span id="home-cart-chip-text">0</span>
+          </button>
+        </div>
       </div>
-      <div class="search-wrap">
-        <div class="search-bar">
-          <span class="search-icon">🔍</span>
-          <input type="search" id="search-input" placeholder="Search milk, bread, fruits..." autocomplete="off" />
-          <button type="button" class="search-clear hidden" id="search-clear" aria-label="Clear search">✕</button>
+
+      <div class="web-header-search">
+        <div class="search-wrap">
+          <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="search" id="search-input" placeholder="Search milk, bread, fruits… (tap result to add to cart)" autocomplete="off" />
+            <button type="button" class="search-clear hidden" id="search-clear" aria-label="Clear search">✕</button>
+          </div>
         </div>
       </div>
     </header>
 
-    <!-- Search overlay (above all screens, inside frame) -->
     <div class="search-layer hidden" id="search-layer">
       <div class="search-backdrop" id="search-backdrop"></div>
       <div class="search-panel" id="search-results"></div>
     </div>
 
-    <!-- SCREEN 1: Home -->
-    <main class="screen active" id="screen-home">
-      <div class="home-top">
-        <div>
-          <p class="greeting-time" id="greeting-time">Good morning</p>
-          <p class="greeting-sub" id="greeting-sub">Add usual picks + your AI pick in one order</p>
-        </div>
-        <button type="button" class="home-cart-chip hidden" id="home-cart-chip" data-go="cart">
-          🛒 <span id="home-cart-chip-text">0</span>
-        </button>
-      </div>
-
-      <!-- Usual picks first -->
-      <section class="section section-picks-compact">
-        <div class="section-head compact">
-          <h2 class="section-title">🛒 Usual picks</h2>
-          <span class="section-hint">Tap + to add</span>
-        </div>
-        <div class="habit-chips compact">
-          <button type="button" class="habit-chip c-milk" data-pick="milk"><span>🥛</span>Milk</button>
-          <button type="button" class="habit-chip c-bread" data-pick="bread"><span>🍞</span>Bread</button>
-          <button type="button" class="habit-chip c-fruit" data-pick="fruit"><span>🍌</span>Fruit</button>
-          <button type="button" class="habit-chip c-reorder" id="btn-reorder-all"><span>↻</span>All</button>
-        </div>
-        <div class="quick-picks compact" id="quick-picks"></div>
-      </section>
-
-      <!-- AI recommendation second -->
-      <section class="section-ai-hero">
-        <div class="ai-hero-header">
-          <div class="ai-hero-title">
-            <span class="ai-badge pulse">✨ AI</span>
-            <h2>Your Discovery Pick</h2>
-          </div>
-          <span class="ai-hero-tag">MVP · One smart recommendation</span>
-        </div>
-
-        <div id="home-ai-loading" class="home-ai-skeleton">
-          <div class="skeleton-line wide"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line short"></div>
-        </div>
-
-        <article id="home-ai-card" class="home-ai-card hidden">
-          <div class="home-ai-glow"></div>
-          <div class="home-ai-spotlight">Recommended for you</div>
-          <p class="home-ai-category" id="home-category">—</p>
-          <h3 class="home-ai-headline" id="home-headline">—</h3>
-          <div class="home-ai-reason" id="home-reason">—</div>
-          <div class="home-ai-product" id="home-product"></div>
-          <div class="home-ai-meta">
-            <span id="home-trust"></span>
-            <span id="home-price" class="home-ai-price"></span>
-          </div>
-          <div class="home-ai-actions">
-            <button type="button" class="btn-add btn-add-hero" id="btn-add-ai-home">+ Add AI pick to cart</button>
-            <button type="button" class="btn-ghost" data-go="discover">Full details →</button>
-          </div>
-        </article>
-
-        <div id="home-ai-error" class="error-msg hidden">
-          Start backend: <code>python run.py</code>
-        </div>
-      </section>
-
-      <section class="section generic-section">
-        <h2 class="section-title muted">Old way: People also bought</h2>
-        <div class="generic-widget">
-          <div class="generic-item">🧴</div>
-          <div class="generic-item">🍪</div>
-          <div class="generic-item">🧃</div>
-        </div>
-      </section>
-
-      <!-- Sticky checkout bar when cart has items -->
-      <div class="home-checkout-bar hidden" id="home-checkout-bar">
-        <div class="checkout-bar-left">
-          <span class="checkout-bar-count" id="checkout-bar-count">0 items</span>
-          <span class="checkout-bar-total" id="checkout-bar-total">₹0</span>
-        </div>
-        <button type="button" class="btn-checkout-bar" id="btn-home-checkout">Proceed to Checkout →</button>
-      </div>
-    </main>
-
-    <!-- SCREEN 2: Discover (AI Card) -->
-    <main class="screen" id="screen-discover">
-      <section class="section">
-        <div class="screen-label">
-          <span class="ai-badge">AI</span>
-          Discovery Pilot
-        </div>
-
-        <div id="loading" class="skeleton-card">
-          <div class="skeleton-line wide"></div>
-          <div class="skeleton-line"></div>
-        </div>
-
-        <article id="discovery-card" class="discovery-card hidden">
-          <div class="discovery-glow"></div>
-          <p class="discovery-category" id="disc-category">—</p>
-          <h1 class="discovery-headline" id="disc-headline">—</h1>
-
-          <div class="explain-box">
-            <p class="explain-label">💡 Why this?</p>
-            <p class="explain-text" id="disc-reason">—</p>
+    <div class="web-body">
+      <!-- HOME -->
+      <main class="screen active" id="screen-home">
+        <div class="web-page">
+          <div class="page-head">
+            <div>
+              <p class="greeting-time" id="greeting-time">Good morning</p>
+              <p class="greeting-sub" id="greeting-sub">Add usual picks + your AI pick in one order</p>
+            </div>
           </div>
 
-          <p class="disc-context" id="disc-context"></p>
-          <p class="disc-trust" id="disc-trust"></p>
+          <div class="home-grid">
+            <section class="panel panel-picks">
+              <div class="section-head compact">
+                <h2 class="section-title">🛒 Your usual picks</h2>
+                <span class="section-hint">Tap + to add to cart</span>
+              </div>
+              <div class="habit-chips compact">
+                <button type="button" class="habit-chip c-milk" data-pick="milk"><span>🥛</span>Milk</button>
+                <button type="button" class="habit-chip c-bread" data-pick="bread"><span>🍞</span>Bread</button>
+                <button type="button" class="habit-chip c-fruit" data-pick="fruit"><span>🍌</span>Fruit</button>
+                <button type="button" class="habit-chip c-reorder" id="btn-reorder-all"><span>↻</span>Reorder all</button>
+              </div>
+              <div class="picks-frame">
+                <div class="quick-picks web-picks picks-compact" id="quick-picks"></div>
+              </div>
+            </section>
 
-          <div class="products-scroll" id="disc-products"></div>
-          <div class="bundle-row" id="disc-bundle"></div>
-          <div class="rewards-row" id="disc-rewards"></div>
-          <p class="price-compare" id="disc-price"></p>
+            <section class="panel panel-ai">
+              <div class="ai-hero-header">
+                <div class="ai-hero-title">
+                  <span class="ai-badge pulse">✨ AI</span>
+                  <h2>Your Discovery Pick</h2>
+                </div>
+                <span class="ai-hero-tag">MVP · Core recommendation</span>
+              </div>
 
-          <button class="btn-add" id="btn-add-cart">One-click Add to Cart</button>
-        </article>
+              <div id="home-ai-loading" class="home-ai-skeleton">
+                <div class="skeleton-line wide"></div>
+                <div class="skeleton-line"></div>
+              </div>
 
-        <div id="card-error" class="error-msg hidden">
-          Start backend: <code>python run.py</code>
-        </div>
-      </section>
-    </main>
+              <article id="home-ai-card" class="home-ai-card hidden">
+                <div class="home-ai-glow"></div>
+                <div class="home-ai-spotlight">Recommended for you</div>
+                <p class="home-ai-category" id="home-category">—</p>
+                <h3 class="home-ai-headline" id="home-headline">—</h3>
+                <div class="home-ai-reason" id="home-reason">—</div>
+                <div class="home-ai-product" id="home-product"></div>
+                <div class="home-ai-meta">
+                  <span id="home-trust"></span>
+                  <span id="home-price" class="home-ai-price"></span>
+                </div>
+                <div class="home-ai-actions">
+                  <button type="button" class="btn-add btn-add-hero" id="btn-add-ai-home">+ Add AI pick to cart</button>
+                  <button type="button" class="btn-ghost" data-go="discover">View full details →</button>
+                </div>
+              </article>
 
-    <!-- SCREEN 3: Cart / Checkout -->
-    <main class="screen" id="screen-cart">
-      <section class="section">
-        <h2 class="section-title">🛍️ Checkout</h2>
-        <p class="cart-subtitle" id="cart-subtitle">Review your cart and place order</p>
-        <div id="cart-empty" class="empty-cart">
-          <span class="empty-icon">🛒</span>
-          <p>Cart is empty</p>
-          <p class="empty-hint">Add usual picks from Home, then add your AI pick</p>
-          <button class="btn-outline" data-go="home">Back to Home</button>
-        </div>
-        <div id="cart-items" class="cart-list hidden"></div>
-        <div id="cart-ai-nudge" class="cart-ai-nudge hidden">
-          <span>✨</span>
-          <p id="cart-ai-nudge-text">Try your AI discovery pick — add it before checkout!</p>
-          <button type="button" class="btn-nudge" id="btn-cart-add-ai">+ Add AI pick</button>
-        </div>
-        <div id="cart-summary" class="cart-summary hidden">
-          <div class="summary-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
-          <div class="summary-row highlight" id="bonus-row"><span>New category bonus</span><span id="cart-bonus">-₹0</span></div>
-          <div class="summary-row total"><span>Total</span><span id="cart-total">₹0</span></div>
-          <button class="btn-add" id="btn-checkout">Place Order →</button>
-        </div>
-      </section>
-    </main>
-
-    <!-- SCREEN 4: Insights -->
-    <main class="screen" id="screen-insights">
-      <section class="section">
-        <h2 class="section-title">📊 Your Discovery Insights</h2>
-        <div class="insight-cards">
-          <div class="insight-card ic-purple">
-            <span class="ic-value" id="ins-categories">0</span>
-            <span class="ic-label">New categories explored</span>
+              <div id="home-ai-error" class="error-msg hidden">
+                Start backend: <code>python run.py</code>
+              </div>
+            </section>
           </div>
-          <div class="insight-card ic-teal">
-            <span class="ic-value" id="ins-saved">~12 min</span>
-            <span class="ic-label">Browsing time saved</span>
-          </div>
-          <div class="insight-card ic-pink">
-            <span class="ic-value" id="ins-savings">₹0</span>
-            <span class="ic-label">Saved vs competitors</span>
-          </div>
-          <div class="insight-card ic-orange">
-            <span class="ic-value" id="ins-coins">0</span>
-            <span class="ic-label">Pilot Coins earned</span>
-          </div>
-        </div>
-        <div class="pilot-banner">
-          <h3>🎯 North Star Pilot</h3>
-          <p>% users buying ≥1 new category every month</p>
-          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-          <span class="progress-label" id="progress-label">Target: +15% lift</span>
-        </div>
-      </section>
-    </main>
 
-    <!-- Bottom nav -->
-    <nav class="bottom-nav">
-      <button class="nav-item active" data-screen="home"><span>🏠</span>Home</button>
-      <button class="nav-item" data-screen="discover"><span>✨</span>Discover</button>
-      <button class="nav-item" data-screen="cart"><span>🛒</span>Cart<span class="cart-badge hidden" id="cart-count">0</span></button>
-      <button class="nav-item" data-screen="insights"><span>📊</span>Insights</button>
+          <section class="panel panel-muted generic-section">
+            <h2 class="section-title muted">Old way: People also bought</h2>
+            <div class="generic-widget">
+              <div class="generic-item">🧴</div>
+              <div class="generic-item">🍪</div>
+              <div class="generic-item">🧃</div>
+            </div>
+          </section>
+        </div>
+
+        <div class="checkout-bar hidden" id="home-checkout-bar">
+          <div class="checkout-bar-inner">
+            <div class="checkout-bar-left">
+              <span class="checkout-bar-count" id="checkout-bar-count">0 items</span>
+              <span class="checkout-bar-total" id="checkout-bar-total">₹0</span>
+            </div>
+            <button type="button" class="btn-checkout-bar" id="btn-home-checkout">Proceed to Checkout →</button>
+          </div>
+        </div>
+      </main>
+
+      <!-- DISCOVER -->
+      <main class="screen" id="screen-discover">
+        <div class="web-page web-page-narrow">
+          <div class="screen-label">
+            <span class="ai-badge">AI</span>
+            Discovery Pilot — Full recommendation
+          </div>
+          <div id="loading" class="skeleton-card">
+            <div class="skeleton-line wide"></div>
+            <div class="skeleton-line"></div>
+          </div>
+          <article id="discovery-card" class="discovery-card hidden">
+            <div class="discovery-glow"></div>
+            <p class="discovery-category" id="disc-category">—</p>
+            <h1 class="discovery-headline" id="disc-headline">—</h1>
+            <div class="explain-box">
+              <p class="explain-label">💡 Why this?</p>
+              <p class="explain-text" id="disc-reason">—</p>
+            </div>
+            <p class="disc-context" id="disc-context"></p>
+            <p class="disc-trust" id="disc-trust"></p>
+            <div class="products-scroll" id="disc-products"></div>
+            <div class="bundle-row" id="disc-bundle"></div>
+            <div class="rewards-row" id="disc-rewards"></div>
+            <p class="price-compare" id="disc-price"></p>
+            <button class="btn-add" id="btn-add-cart">One-click Add to Cart</button>
+          </article>
+          <div id="card-error" class="error-msg hidden">
+            Start backend: <code>python run.py</code>
+          </div>
+        </div>
+      </main>
+
+      <!-- CHECKOUT -->
+      <main class="screen" id="screen-cart">
+        <div class="web-page">
+          <div class="checkout-layout">
+            <div class="checkout-main">
+              <h2 class="section-title">🛍️ Checkout</h2>
+              <p class="cart-subtitle" id="cart-subtitle">Review your cart and place order</p>
+              <div id="cart-empty" class="empty-cart">
+                <span class="empty-icon">🛒</span>
+                <p>Cart is empty</p>
+                <p class="empty-hint">Add usual picks from Home, then add your AI pick</p>
+                <button class="btn-outline" data-go="home">Back to Home</button>
+              </div>
+              <div id="cart-items" class="cart-list hidden"></div>
+              <div id="cart-ai-nudge" class="cart-ai-nudge hidden">
+                <span>✨</span>
+                <p id="cart-ai-nudge-text">Try your AI discovery pick — add it before checkout!</p>
+                <button type="button" class="btn-nudge" id="btn-cart-add-ai">+ Add AI pick</button>
+              </div>
+            </div>
+            <aside id="cart-summary" class="cart-summary cart-sidebar hidden">
+              <h3 class="sidebar-title">Order summary</h3>
+              <div class="summary-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
+              <div class="summary-row highlight" id="bonus-row"><span>New category bonus</span><span id="cart-bonus">-₹0</span></div>
+              <div class="summary-row total"><span>Total</span><span id="cart-total">₹0</span></div>
+              <button class="btn-add" id="btn-checkout">Place Order →</button>
+            </aside>
+          </div>
+        </div>
+      </main>
+
+      <!-- INSIGHTS -->
+      <main class="screen" id="screen-insights">
+        <div class="web-page">
+          <h2 class="section-title">📊 Your Discovery Insights</h2>
+          <div class="insight-cards">
+            <div class="insight-card ic-purple">
+              <span class="ic-value" id="ins-categories">0</span>
+              <span class="ic-label">New categories explored</span>
+            </div>
+            <div class="insight-card ic-teal">
+              <span class="ic-value" id="ins-saved">~12 min</span>
+              <span class="ic-label">Browsing time saved</span>
+            </div>
+            <div class="insight-card ic-pink">
+              <span class="ic-value" id="ins-savings">₹0</span>
+              <span class="ic-label">Saved vs competitors</span>
+            </div>
+            <div class="insight-card ic-orange">
+              <span class="ic-value" id="ins-coins">0</span>
+              <span class="ic-label">Pilot Coins earned</span>
+            </div>
+          </div>
+          <div class="pilot-banner">
+            <h3>🎯 North Star Pilot</h3>
+            <p>% users buying ≥1 new category every month</p>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            <span class="progress-label" id="progress-label">Target: +15% lift</span>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button type="button" class="nav-item active" data-screen="home"><span>🏠</span>Home</button>
+      <button type="button" class="nav-item" data-screen="discover"><span>✨</span>Discover</button>
+      <button type="button" class="nav-item" data-screen="cart"><span>🛒</span>Checkout<span class="cart-badge hidden" id="cart-count">0</span></button>
+      <button type="button" class="nav-item" data-screen="insights"><span>📊</span>Insights</button>
     </nav>
 
-    <!-- AI reminder before checkout (no AI in cart) -->
+    <footer class="web-footer">
+      <span>BasketPilot · Discovery Pilot MVP</span>
+      <span id="demo-meta">—</span>
+    </footer>
+
+    <!-- Modals -->
     <div class="overlay overlay-modal hidden" id="ai-remind-overlay">
       <div class="sheet sheet-modal sheet-remind">
         <div class="remind-icon">✨</div>
@@ -235,7 +256,6 @@
       </div>
     </div>
 
-    <!-- Post-purchase rating (after order placed with AI) -->
     <div class="overlay overlay-modal hidden" id="rating-overlay">
       <div class="sheet sheet-modal sheet-colorful">
         <h3>How was your Discovery Pilot? 🌟</h3>
@@ -251,7 +271,6 @@
       </div>
     </div>
 
-    <!-- Checkout success -->
     <div class="overlay overlay-modal hidden" id="success-overlay">
       <div class="sheet sheet-modal sheet-success">
         <div class="success-icon">🎉</div>
@@ -263,12 +282,6 @@
 
     <div class="toast hidden" id="toast"></div>
   </div>
-
-  <footer class="demo-footer">
-    <span>BasketPilot · Discovery Pilot MVP</span>
-    <span id="demo-meta">—</span>
-    <a href="/ui/test.html" class="dev-link">Dev</a>
-  </footer>
 
   <script src="/ui/app.js"></script>
 </body>
