@@ -64,6 +64,7 @@ html.app-mode .web-page {
 html.app-mode .home-grid {
   grid-template-columns: minmax(260px, 42%) minmax(0, 58%);
   gap: 8px;
+  align-items: start;
 }
 
 html.app-mode .side-nav {
@@ -240,9 +241,17 @@ html.embed-mode .phone-frame {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
   gap: 10px;
   margin-bottom: 0;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
+  flex: 0 0 auto;
+  align-items: start;
+  align-content: start;
+  overflow: visible;
+}
+
+.home-grid .panel {
+  height: auto;
+  min-height: unset;
+  flex: 0 0 auto;
+  align-self: start;
 }
 
 .panel {
@@ -251,7 +260,6 @@ html.embed-mode .phone-frame {
   padding: 10px 12px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-  min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -260,7 +268,6 @@ html.embed-mode .phone-frame {
 .panel-picks {
   padding: 10px;
   max-width: 100%;
-  align-self: stretch;
 }
 
 .picks-frame {
@@ -268,17 +275,14 @@ html.embed-mode .phone-frame {
   border-radius: 10px;
   background: linear-gradient(180deg, #faf5ff, #fff);
   padding: 6px;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  flex: 0 0 auto;
+  overflow: visible;
+  display: block;
 }
 
 .picks-frame .picks-compact {
-  overflow: hidden;
-  flex: 1;
-  min-height: 0;
+  overflow: visible;
+  flex: none;
   margin-top: 0;
   padding-right: 0;
   align-content: start;
@@ -286,7 +290,10 @@ html.embed-mode .phone-frame {
 
 .panel-ai {
   border: 2px solid #c4b5fd;
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.12);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .panel-muted {
@@ -533,7 +540,8 @@ html.embed-mode .web-footer {
 @media (max-width: 900px) {
   .home-grid {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-rows: none;
+    align-items: start;
   }
 
   .checkout-layout {
@@ -827,7 +835,7 @@ html.embed-mode .screen {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   gap: 6px;
   flex-shrink: 0;
 }
@@ -888,6 +896,17 @@ html.embed-mode .screen {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+#screen-home .home-grid {
+  flex: 0 0 auto;
+}
+
+#screen-home .checkout-bar {
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .home-ai-skeleton {
@@ -895,12 +914,7 @@ html.embed-mode .screen {
   border-radius: var(--radius);
   padding: 12px;
   border: 2px dashed #c4b5fd;
-  flex: 1;
-  min-height: 0;
-}
-
-.panel-ai {
-  min-height: 0;
+  flex: 0 0 auto;
 }
 
 .home-ai-card {
@@ -911,10 +925,8 @@ html.embed-mode .screen {
   border: 2px solid rgba(124, 58, 237, 0.35);
   box-shadow: 0 8px 24px rgba(124, 58, 237, 0.18);
   overflow: hidden;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+  flex: 0 0 auto;
+  display: block;
 }
 
 .home-ai-glow {
@@ -982,7 +994,7 @@ html.embed-mode .screen {
   gap: 6px;
   font-size: 0.65rem;
   color: var(--green);
-  margin-bottom: 8px;
+  margin-bottom: 0;
   flex-wrap: wrap;
 }
 
@@ -1000,25 +1012,13 @@ html.embed-mode .screen {
   pointer-events: auto;
 }
 
-.panel-ai {
-  border: 2px solid #c4b5fd;
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.1);
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.panel-ai #home-ai-card {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
 .panel-ai .home-ai-actions {
   flex-shrink: 0;
   z-index: 2;
   position: relative;
-  padding-top: 4px;
+  padding-top: 0;
+  margin-top: 0;
+  gap: 4px;
 }
 
 .home-ai-headline {
