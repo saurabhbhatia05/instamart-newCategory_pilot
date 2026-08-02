@@ -54,8 +54,13 @@ def _escape_script(js: str) -> str:
     return js.replace("</script>", "<\\/script>")
 
 
+def _asset_version() -> str:
+    paths = (FRONTEND / "index.html", FRONTEND / "styles.css", FRONTEND / "app.js")
+    return str(tuple(p.stat().st_mtime_ns for p in paths if p.exists()))
+
+
 @st.cache_data(show_spinner=False)
-def build_embed_html(cards_json: str) -> str:
+def build_embed_html(cards_json: str, asset_version: str) -> str:
     """Self-contained HTML shell for components.html (stable across reruns)."""
     index_html = (FRONTEND / "index.html").read_text(encoding="utf-8")
     styles = (FRONTEND / "styles.css").read_text(encoding="utf-8")
@@ -133,9 +138,9 @@ def main() -> None:
         st.stop()
 
     cards_json = json.dumps(initial_cards)
-    embed_html = build_embed_html(cards_json)
+    embed_html = build_embed_html(cards_json, _asset_version())
 
-    components.html(embed_html, height=900, scrolling=True)
+    components.html(embed_html, height=900, scrolling=False)
 
 
 if __name__ == "__main__":

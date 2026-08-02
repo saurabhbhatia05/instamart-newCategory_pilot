@@ -25,21 +25,21 @@
           <span class="brand-tagline">Smart Discovery</span>
         </div>
 
+        <div class="web-header-search">
+          <div class="search-wrap">
+            <div class="search-bar">
+              <span class="search-icon">🔍</span>
+              <input type="search" id="search-input" placeholder="Search milk, bread, fruits…" autocomplete="off" />
+              <button type="button" class="search-clear hidden" id="search-clear" aria-label="Clear search">✕</button>
+            </div>
+          </div>
+        </div>
+
         <div class="header-actions">
           <span class="delivery-pill" id="delivery-pill">⚡ 8 min delivery</span>
           <button type="button" class="header-cart-btn hidden" id="home-cart-chip" data-go="cart">
             🛒 <span id="home-cart-chip-text">0</span>
           </button>
-        </div>
-      </div>
-
-      <div class="web-header-search">
-        <div class="search-wrap">
-          <div class="search-bar">
-            <span class="search-icon">🔍</span>
-            <input type="search" id="search-input" placeholder="Search milk, bread, fruits… (tap result to add to cart)" autocomplete="off" />
-            <button type="button" class="search-clear hidden" id="search-clear" aria-label="Clear search">✕</button>
-          </div>
         </div>
       </div>
     </header>
@@ -49,7 +49,18 @@
       <div class="search-panel" id="search-results"></div>
     </div>
 
-    <div class="web-body">
+    <div class="web-shell">
+      <nav class="side-nav" aria-label="Main navigation">
+        <div class="side-nav-brand">
+          <span class="side-nav-label">Menu</span>
+        </div>
+        <button type="button" class="nav-item active" data-screen="home"><span>🏠</span>Home</button>
+        <button type="button" class="nav-item" data-screen="discover"><span>✨</span>Discover</button>
+        <button type="button" class="nav-item" data-screen="cart"><span>🛒</span>Checkout<span class="cart-badge hidden" id="cart-count">0</span></button>
+        <button type="button" class="nav-item" data-screen="insights"><span>📊</span>Insights</button>
+      </nav>
+
+      <div class="web-body">
       <!-- HOME -->
       <main class="screen active" id="screen-home">
         <div class="web-page">
@@ -113,15 +124,6 @@
               </div>
             </section>
           </div>
-
-          <section class="panel panel-muted generic-section">
-            <h2 class="section-title muted">Old way: People also bought</h2>
-            <div class="generic-widget">
-              <div class="generic-item">🧴</div>
-              <div class="generic-item">🍪</div>
-              <div class="generic-item">🧃</div>
-            </div>
-          </section>
         </div>
 
         <div class="checkout-bar hidden" id="home-checkout-bar">
@@ -229,14 +231,8 @@
           </div>
         </div>
       </main>
+      </div>
     </div>
-
-    <nav class="bottom-nav" aria-label="Main navigation">
-      <button type="button" class="nav-item active" data-screen="home"><span>🏠</span>Home</button>
-      <button type="button" class="nav-item" data-screen="discover"><span>✨</span>Discover</button>
-      <button type="button" class="nav-item" data-screen="cart"><span>🛒</span>Checkout<span class="cart-badge hidden" id="cart-count">0</span></button>
-      <button type="button" class="nav-item" data-screen="insights"><span>📊</span>Insights</button>
-    </nav>
 
     <footer class="web-footer">
       <span>BasketPilot · Discovery Pilot MVP</span>
